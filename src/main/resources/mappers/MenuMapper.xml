@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chd.backstage.dao.MenuDao">
+
+    <select id="obtainMenus" resultMap="MenuresultMap">
+        SELECT *
+        FROM menu
+    </select>
+
+    <resultMap id="MenuresultMap" type="com.chd.backstage.entity.Menu">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="uri" property="uri"></result>
+    </resultMap>
+</mapper>

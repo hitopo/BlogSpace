@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chd.backstage.dao.ArticleDao">
+
+    <!-- 为当前实体生成主键 -->
+    <insert id="insertArticle" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO article
+            (brief, title, content, author, publishDate, click, categoryId)
+        VALUES (#{brief}, #{title}, #{content}, #{author}, #{publishDate}, #{click}, #{categoryId})
+    </insert>
+
+    <insert id="insertArticleTag" parameterType="java.util.List">
+        INSERT INTO tag(name,articleId)
+        VALUES
+        <foreach collection="list" item="tag" index="index" separator=",">
+            (#{tag.name},#{tag.articleId})
+        </foreach>
+    </insert>
+
+    <update id="updateArticle">
+        UPDATE article
+        SET content=(#{content}),
+            click=#{click},
+            publishDate =#{publishDate}
+        WHERE id = (#{id})
+    </update>
+
+    <delete id="deleteArticle">
+        DELETE
+        FROM article
+        WHERE id = (#{id})
+    </delete>
+
+    <delete id="deleteTagByArticleId">
+        DELETE
+        FROM tag
+        WHERE articleId = (#{articleId})
+    </delete>
+
+    <select id="getArticleById" resultType="com.chd.backstage.entity.Article">
+        SELECT *
+        FROM article
+        WHERE id = (#{id})
+    </select>
+
+    <select id="getAllArticle" resultType="com.chd.backstage.entity.Article">
+        SELECT * FROM article
+        <if test="author !=null and author !='' ">
+            <where>
+                AND author = (#{author})
+            </where>
+        </if>
+        <if test="title !=null and title !='' ">
+            <where>
+                and lower(title) LIKE concat(concat("%",#{title}),"%")
+            </where>
+        </if>
+        ORDER BY publishDate DESC
+    </select>
+
+    <!-- 根据文章点击量获取X篇文章-->
+    <select id="getArticleByClick" resultType="com.chd.backstage.entity.Article">
+        SELECT *
+        FROM article
+        ORDER BY click DESC
+        LIMIT 0,#{limit}
+    </select>
+
+    <!-- 获取前一篇文章，那么条件 id < 当前文章id 的第一篇文章-->
+    <!-- 但是小于号是不能直接出现在mybatis的配置文件中的，所以需要转义-->
+    <select id="getPreviousArticle" resultType="com.chd.backstage.entity.Article">
+        SELECT *
+        FROM article
+        WHERE id &lt; #{currentArticleId}
+        ORDER BY id DESC
+        LIMIT 0,1
+    </select>
+
+    <select id="getNextArticle" resultType="com.chd.backstage.entity.Article">
+        SELECT *
+        FROM article
+        WHERE id &gt; #{currentArticleId}
+        ORDER BY id ASC
+        LIMIT 0,1
+    </select>
+
+    <select id="getTagsByArticleId" resultType="com.chd.backstage.entity.Tag">
+        SELECT *
+        FROM tag
+        WHERE articleId = #{articleId}
+    </select>
+
+    <!-- 模糊查询-->
+    <select id="getSimilarTag" resultType="com.chd.backstage.entity.Tag">
+        SELECT * FROM tag
+        <if test="tag1 !=null and tag1 !=''">
+            <where>
+                and lower(name) LIKE concat(concat("%",#{tag1}),"%")
+            </where>
+        </if>
+        <if test="tag2 !=null and tag2 !=''">
+            OR lower(name) LIKE concat(concat("%",#{tag2}),"%")
+        </if>
+        <if test="tag3 !=null and tag3 !=''">
+            OR lower(name) LIKE concat(concat("%",#{tag3}),"%")
+        </if>
+        <if test="tag4 !=null and tag4 !=''">
+            OR lower(name) LIKE concat(concat("%",#{tag4}),"%")
+        </if>
+        GROUP BY articleId
+        LIMIT 0,6
+    </select>
+
+    <select id="getRecommandArticleId" resultType="java.lang.Long">
+        SELECT articleId
+        FROM comment
+        GROUP BY articleId
+        ORDER BY COUNT(content) DESC
+        LIMIT 0,5
+    </select>
+
+    <select id="getRecommandArtice" resultType="com.chd.backstage.entity.Article">
+        SELECT * from article
+        WHERE id in
+        <foreach collection="list" item="articleId" open="(" close=")" separator=",">
+            #{articleId}
+        </foreach>
+    </select>
+
+    <select id="getArticleByCondition" resultType="com.chd.backstage.entity.Article">
+        SELECT * from article
+        <if test="author != null and author !=''">
+            <where>
+                and author = #{author}
+            </where>
+        </if>
+        <if test="id !=null and id!=''">
+            <where>
+                id = #{id}
+            </where>
+        </if>
+        <if test="condition !=null">
+            ORDER BY ${condition}
+        </if>
+        <if test="sort !=null">
+            ${sort}
+        </if>
+    </select>
+</mapper>

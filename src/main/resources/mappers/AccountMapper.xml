@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chd.backstage.dao.SecurityDao">
+
+    <insert id="insertAccount" parameterType="com.chd.backstage.entity.Account" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO account(nickname, loginName, password, idCard, cellPhone, enabled)
+            VALUE (#{nickname}, #{loginName}, #{password}, #{idCard}, #{cellPhone}, #{enabled})
+    </insert>
+
+    <update id="resetPassword">
+        UPDATE account
+        SET password = (#{password})
+        WHERE loginName = (#{loginName})
+    </update>
+
+    <update id="makeAccountUnEnable">
+        UPDATE account
+        SET enabled = FALSE
+        WHERE loginName = (#{loginName})
+    </update>
+
+    <update id="updateAccount">
+        UPDATE account
+        SET idCard   = #{idCard},
+            cellPhone=#{cellPhone},
+            enabled=#{enabled}
+        WHERE loginName = #{loginName}
+    </update>
+
+    <select id="checkAccountExistByNickname" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM account
+        WHERE nickname = (#{nickname})
+    </select>
+
+    <select id="checkAccountExistByloginName" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM account
+        WHERE loginName = (#{loginName})
+    </select>
+
+    <select id="getAccountByLoginName" resultType="com.chd.backstage.entity.Account">
+        SELECT *
+        FROM account
+        WHERE loginName = (#{loginName})
+    </select>
+
+    <select id="getPasswordByLoginName" resultType="java.lang.String">
+        SELECT password
+        FROM account
+        WHERE loginName = (#{loginName})
+    </select>
+
+    <select id="getAccountByNickname" resultType="com.chd.backstage.entity.Account">
+        SELECT *
+        FROM account
+        WHERE nickname = (#{nickname})
+    </select>
+    <select id="obtainAllAccount" resultType="com.chd.backstage.entity.Account">
+        SELECT * FROM account
+        <if test="enabled !=null and enabled != '' ">
+            <where>
+                AND enabled = (#{enabled})
+            </where>
+        </if>
+    </select>
+
+    <select id="getAccountById" resultType="com.chd.backstage.entity.Account">
+        SELECT *
+        FROM account
+        WHERE id = #{accountId}
+    </select>
+
+    <select id="getAccountByCondition" resultType="com.chd.backstage.entity.Account">
+        SELECT * FROM account
+        <if test="condition!=null and condition!=''">
+            <where>
+                and ${condition} = #{searchValue}
+            </where>
+        </if>
+        <if test="enabled!=null and enabled!=''">
+            <if test="condition!=null and condition!=''">
+                and enabled = ${enabled}
+            </if>
+            <if test="condition==null || condition==''">
+                <where>
+                    enabled = ${enabled}
+                </where>
+            </if>
+        </if>
+    </select>
+
+    <select id="getCountByCondition" resultType="java.lang.Integer"></select>
+
+    <delete id="deleteAccount">
+        DELETE
+        FROM account
+        WHERE id = (#{id})
+    </delete>
+
+</mapper>
